@@ -95,8 +95,8 @@ end
 ### computation of large SNP data in pieces
 function GRMVariter(M, pieces)
 	
-       scale(X, d) = (X .- (2 .* d)) ./ sqrt.(d)
-
+       scale(X, d) = (X .- (2 .* d)) ./ sqrt.((size(X, 2) * 2) .* d .* (1 .- d))
+	
        series = collect(1:size(M,2));
        xx = Iterators.partition(series, pieces) |> collect;
 
@@ -118,4 +118,19 @@ function GRMVariter(M, pieces)
 
 end
 
+#### Dominance + absence presence kernels
+
+function DOM(M)
+    
+	# mean = 2P, var/scale = n * 2pq(1 - 2pq)
+	scale(X, d) = (X .- (2 .* d)) ./ sqrt.(size(X, 2)  .*  2 .* d .* (1 .- d) .* (1  .- 2 .* d .* (1 .- d)))
+	
+	M = Matrix(M);
+	P = mean(M, dims=1) ./2 ## freq
+	A = scale(M, P);
+	K = (A * A');
+	K = 0.99*K + 0.01*I;
+	return(K)
+
+end
 
