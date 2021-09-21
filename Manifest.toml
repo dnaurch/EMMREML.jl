@@ -231,6 +231,12 @@ version = "0.2.3"
 deps = ["Unicode"]
 uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
+[[RCall]]
+deps = ["CategoricalArrays", "Conda", "DataFrames", "DataStructures", "Dates", "Libdl", "Missings", "REPL", "Random", "Requires", "StatsModels", "WinReg"]
+git-tree-sha1 = "80a056277142a340e646beea0e213f9aecb99caa"
+uuid = "6f49c342-dc21-5d91-9882-a32aef131414"
+version = "0.13.12"
+
 [[REPL]]
 deps = ["InteractiveUtils", "Markdown", "Sockets"]
 uuid = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
