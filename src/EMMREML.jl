@@ -1,6 +1,6 @@
 module EMMREML
 
-using Optim;
+using Optim, RCall;
 using Statistics, Distributions;
 using ForwardDiff, PositiveFactorizations;
 using LinearAlgebra, DataFrames, InvertedIndices, PedigreeBase;
