@@ -2,7 +2,7 @@
 ##### Hmat Julia 
 
 using RCall, LinearAlgebra, InvertedIndices
-using EMMREML, PedigreeBase
+using EMMREML, PedigreeBase, NamedArrays
 
 function Hmat(tau, omega, pedfilePath; input="input.Rdata", wtedG=false) 
 
@@ -25,7 +25,9 @@ function Hmat(tau, omega, pedfilePath; input="input.Rdata", wtedG=false)
         @rget M;
         R"idG <- as.character(rownames(M))"; @rget idG;
         R"idH <- unique(c(idG, idA))"; R"idH <- rev(idH)";
-        @rget idH; R"A <- as.matrix(A); A <- A[idH, idH];"; @rget A;
+        @rget idH; 
+        #R"A <- as.matrix(A); A <- A[idH, idH];"; @rget A;
+        A = NamedArray(A, (idA, idA)); A = [idH, idH];
         R"index = which(is.na(match(idH, idG)))"; @rget index;
         A11 = A[index, index];
         A12 = A[index, Not(index)];
