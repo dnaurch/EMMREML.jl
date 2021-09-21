@@ -205,6 +205,12 @@ git-tree-sha1 = "0139ba59ce9bc680e2925aec5b7db79065d60556"
 uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
 version = "0.3.10"
 
+[[PedigreeBase]]
+deps = ["LinearAlgebra", "OffsetArrays", "SparseArrays", "SparseMatrixDicts"]
+git-tree-sha1 = "0284471b3ef30eabb0ea4609141b346d249fdf5d"
+uuid = "9e3bf72a-84c4-4798-98fd-c28eed5cded1"
+version = "0.1.4"
+
 [[Pkg]]
 deps = ["Dates", "LibGit2", "Markdown", "Printf", "REPL", "Random", "SHA", "UUIDs"]
 uuid = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
