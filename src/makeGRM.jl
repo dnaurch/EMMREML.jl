@@ -123,7 +123,7 @@ end
 function DOM(M)
     
 	# mean = 2P, var/scale = n * 2pq(1 - 2pq)
-	scale(X, d) = (X .- (2 .* d)) ./ sqrt.(size(X, 2)  .*  2 .* d .* (1 .- d) .* (1  .- 2 .* d .* (1 .- d)))
+	scale(X, d) = (X .- (2 .* d .* (1 .- d))) ./ sqrt.(size(X, 2)  .*  2 .* d .* (1 .- d) .* (1  .- 2 .* d .* (1 .- d)))
 	
 	M = Matrix(M);
 	P = mean(M, dims=1) ./2 ## freq
