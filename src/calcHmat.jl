@@ -58,7 +58,7 @@ function Hmat(tau, omega; input="input.Rdata", wtedG=false)
         #@rget idA;
         
         @rget ped; @rget pednames; @rget pednum;
-        idA = pednames;
+        idA = pednames; @rput idA;
         
         A = computeA(Int64.(ped[:,1]), Int64.(ped[:,2]), Int64.(ped[:, 3]))
         A = NamedArray(A, (idA, idA));
