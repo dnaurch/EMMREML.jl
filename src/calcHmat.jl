@@ -25,7 +25,7 @@ for i in 1:n
         A[i, j] = A[j, i] = 0.5 * (A[j, Sire[i]]) 
         end
 
-    else (Sire[i] != 0 && Dam[i] != 0)
+    elseif (Sire[i] != 0 && Dam[i] != 0)
         for j in 1:(i-1)
         A[i, j] = A[j, i] = 0.5 * (A[j, Sire[i]] + A[j, Dam[i]]) 
         end
