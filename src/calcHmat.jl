@@ -15,12 +15,12 @@ function computeA(Progeny, Sire, Dam)
 
 for i in 1:n
 
-	if (Sire[i] == 0 && Dam[i] != 0)
+    if (Sire[i] == 0 && Dam[i] != 0)
     	for j in 1:(i-1)
         A[i, j] = A[j, i] = 0.5 * (A[j, Dam[i]]) 
         end
 
-	elseif (Sire[i] != 0 && Dam[i] == 0)
+    elseif (Sire[i] != 0 && Dam[i] == 0)
         for j in 1:(i-1)
         A[i, j] = A[j, i] = 0.5 * (A[j, Sire[i]]) 
         end
