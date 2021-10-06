@@ -62,6 +62,9 @@ function Hmat(tau, omega; input="input.Rdata", wtedG=false)
         
         A = computeA(Int64.(ped[:,1]), Int64.(ped[:,2]), Int64.(ped[:, 3]))
         A = NamedArray(A, (idA, idA));
+  
+        ##### Only use pedigree individuals that has data
+        A = A[linenames, linenames];
 
 
         @rget M;
@@ -81,7 +84,7 @@ function Hmat(tau, omega; input="input.Rdata", wtedG=false)
         if wtedG == true
            @rget D; M = Matrix(M); G = GRMwted(M, D); @rput G;
         else 
-           M = Matrix(M); G =  GRM(M); @rput G;
+           M = Matrix(M); G =  GRM(M); #@rput G;
         end
 
         #R"colnames(G) <- rownames(G) <- idG";
