@@ -100,6 +100,7 @@ function Hmat(tau, omega; input="input.Rdata", wtedG=false)
         H21 = (H22 - A22) * A22inv * A21;
         H22 = (H22 - A22);
         H = A + hcat(vcat(H11, H21), vcat(H12, H22));
+        H = (1 - 0.0001)*K + 0.0001*I;
         H = NamedArray(H, (idH, idH));
 
         return(Dict(:H => H,:names => idH))
