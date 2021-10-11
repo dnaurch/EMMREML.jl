@@ -106,3 +106,79 @@ function Hmat(tau, omega; input="input.Rdata", wtedG=false)
         return(Dict(:H => H,:names => idH))
 
 end
+
+
+#### compute Hmat differently ...
+
+function Hmat2(input="input.Rdata", wtedG=false) 
+
+
+        @rput input;
+        R"load(input)";
+        
+        @rget pednames;
+        R"genotyped <- as.character(unique(rownames(M)))";
+        R"ped$genotyped <- 1 * (pednames %in% genotyped)";
+        R"pede <- pedigreemm::pedigree(sire=ped[,2], dam=ped[,3], label=ped[,1])";
+        
+        ### order according to genotyped  - ungenotyped
+        R"pede <- data.frame(sire=ped[,2], dam=ped[,3], label=pednames, genotyped=ped[,4])";
+        R"ped.ord <- dplyr::filter(pede, label %in% linenames)";
+        R"ped.ord <- ped.ord[order(ped.ord$genotyped), ]";
+        R"pedOrd <- as.character(ped.ord$label)";
+        
+        @rget ped; @rget pednames; @rget pednum; @rget linenames; # Linenames ensure only Ped that has data is used for analysis...
+        idA = pednames; @rput idA;
+ 
+        A = computeA(Int64.(ped[:,1]), Int64.(ped[:,2]), Int64.(ped[:, 3]));
+        A = NamedArray(A, (idA, idA));
+  
+        ##### Only use pedigree individuals that has data
+        A = A[linenames, linenames];
+        @rget pedOrd;
+        A = A[pedOrd, pedOrd];
+
+
+        R"g1 <- as.character(ped.ord$label[ped.ord$genotyped == 1])";
+        R"g0 <- as.character(ped.ord$label[ped.ord$genotyped != 1])";
+        R"g0g1 <- as.character(c(g0, g1))";
+        @rget g1; @rget g0; @rget g0g1;
+
+        A11 = A[g0, g0];
+        A22 = A[g1, g1];
+        A12 = A[g0, g1];
+        A21 = A12';
+        A22inv = inv(cholesky(Positive, A22));
+        A22inv = NamedArray(A22inv, (g1, g1));
+
+        A = A[g0g1, g0g1]; # sort by ungenotyped first, then genotyped
+
+        @rget M;
+        R"idG <- rownames(M)"; @rget idG;
+        #### Do wted G or not ######
+
+        if wtedG == true
+           @rget D; M = Matrix(M); G = GRMwted(M, D); @rput G;
+        else 
+           M = Matrix(M); G =  GRM(M);
+        end
+
+        G = NamedArray(G, (idG, idG));
+        
+
+        H11 = A11 + (A12 * A22inv * (G - A22) * A22inv * A21);
+        H12 = A12 * A22inv * G;
+        H21 = H12';
+        H22 = G;
+
+        H = vcat(hcat(H11, H12), hcat(H21, H22));
+        nom1 = vcat(names(A11,1), names(A21, 1)); nom2 = vcat(names(A11,2), names(A12, 2));
+        H = H + 0.0001*I;
+        H = NamedArray(H, (nom1, nom2));
+        H = H[linenames, linenames];
+
+        return(Dict(:H => H,:names => linenames))
+
+end
+
+
