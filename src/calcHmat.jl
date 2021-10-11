@@ -110,7 +110,7 @@ end
 
 #### compute Hmat differently ...
 
-function Hmat2(input="input.Rdata", wtedG=false) 
+function Hmat2(tau, omega; input="input.Rdata", wtedG=false) 
 
 
         @rput input;
