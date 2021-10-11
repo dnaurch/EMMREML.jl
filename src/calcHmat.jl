@@ -119,7 +119,6 @@ function Hmat2(input="input.Rdata", wtedG=false)
         @rget pednames;
         R"genotyped <- as.character(unique(rownames(M)))";
         R"ped$genotyped <- 1 * (pednames %in% genotyped)";
-        R"pede <- pedigreemm::pedigree(sire=ped[,2], dam=ped[,3], label=ped[,1])";
         
         ### order according to genotyped  - ungenotyped
         R"pede <- data.frame(sire=ped[,2], dam=ped[,3], label=pednames, genotyped=ped[,4])";
