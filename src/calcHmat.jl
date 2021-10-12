@@ -181,3 +181,23 @@ function Hmat2(tau, omega; input="input.Rdata", wtedG=false)
 end
 
 
+function pedMat(input) 
+
+
+        @rput input;
+        R"load(input)";
+
+        
+        @rget ped; @rget pednames; @rget pednum; @rget linenames; # Linenames ensure only Ped that has data is used for analysis...
+        idA = pednames; @rput idA;
+ 
+        A = computeA(Int64.(ped[:,1]), Int64.(ped[:,2]), Int64.(ped[:, 3]));
+        A = NamedArray(A, (idA, idA));
+  
+        ##### Only use pedigree individuals that has data
+        A = A[linenames, linenames];
+
+        return(A)
+
+end
+
