@@ -69,16 +69,21 @@ function Hmat(tau, omega; input="input.Rdata", wtedG=false)
 
         @rget M;
         R"idG <- as.character(rownames(M))"; @rget idG;
-        R"idH <- unique(c(idG, idA))"; R"idH <- rev(idH)";
-        @rget idH; 
-        #R"A <- as.matrix(A); A <- A[idH, idH];"; @rget A;
-        A = A[idH, idH];
-        R"index = which(is.na(match(idH, idG)))"; @rget index;
-        A11 = A[index, index];
-        A12 = A[index, Not(index)];
-        A21 = A[Not(index), index];
-        A22 = A[Not(index), Not(index)];
-
+        R"idP <- unique(as.character(setdiff(linenames, idG)))"; @rget idP;
+        
+        #R"index = which(is.na(match(idH, idG)))"; @rget index;
+        #A11 = A[index, index];
+        #A12 = A[index, Not(index)];
+        #A21 = A[Not(index), index];
+        #A22 = A[Not(index), Not(index)];
+  
+        A11 = A[idP, idP];
+        A12 = A[idP, idG];
+        A21 = A12';
+        A22 = A[idG, idG];
+  
+        sorted = vcat(idP, idG);
+        A = A[sorted, sorted];
         #### Do wted G or not ######
 
         if wtedG == true
@@ -87,23 +92,25 @@ function Hmat(tau, omega; input="input.Rdata", wtedG=false)
            M = Matrix(M); G =  GRM(M); #@rput G;
         end
 
-        #R"colnames(G) <- rownames(G) <- idG";
         G = NamedArray(G, (idG, idG));
-        #R"G22 <- G[idH[-(index)], idH[-(index)]]"; @rget G22;
-        G22 = G[idH[Not(index)], idH[Not(index)]]
 
-        A22inv = pinv(A22);
-        G22inv = pinv(G22);
-        H22 = pinv((tau * G22inv) + ((1 - omega) * A22inv));
+        #G22 = G[idH[Not(index)], idH[Not(index)]]
+        G22 = G;
+
+        A22inv = inv(cholesky(Positive, A22)); A22inv = NamedArray(A22inv, (idG, idG));
+        G22inv = inv(cholesky(Positive, G22)); G22inv = NamedArray(G22inv, (idG, idG));
+        H22 = inv(cholesky(Positive, (tau * G22inv) + ((1 - omega) * A22inv))); H22 = NamedArray(H22, (idG, idG));
         H11 = A12 * A22inv * (H22 - A22) * A22inv * A21;
         H12 = A12 * A22inv * (H22 - A22);
         H21 = (H22 - A22) * A22inv * A21;
         H22 = (H22 - A22);
+        nom1 = vcat(names(A11,1), names(A21, 1)); nom2 = vcat(names(A11,2), names(A12, 2));
         H = A + hcat(vcat(H11, H21), vcat(H12, H22));
-        H = (1 - 0.0001)*H + 0.0001*I;
-        H = NamedArray(H, (idH, idH));
+        H = 0.90*H + 0.1*I;
+        H = NamedArray(H, (nom1, nom2));
+        H = H[linenames, linenames];
 
-        return(Dict(:H => H,:names => idH))
+        return(Dict(:H => H,:names => linenames))
 
 end
 
@@ -172,7 +179,7 @@ function Hmat2(tau, omega; input="input.Rdata", wtedG=false)
 
         H = vcat(hcat(H11, H12), hcat(H21, H22));
         nom1 = vcat(names(A11,1), names(A21, 1)); nom2 = vcat(names(A11,2), names(A12, 2));
-        H = H + 0.0001*I;
+        H = 0.9*H + 0.1*I;
         H = NamedArray(H, (nom1, nom2));
         H = H[linenames, linenames];
 
