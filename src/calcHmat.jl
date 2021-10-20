@@ -40,7 +40,7 @@ end
 end
 
 
-function Hmat(tau, omega, M; input="input.Rdata", wtedG=false) 
+function Hmat(tau, omega, M; input="input.Rdata", networks=false) 
 
 ## Amat & input are paths to their Rdata locations
 
@@ -87,10 +87,17 @@ function Hmat(tau, omega, M; input="input.Rdata", wtedG=false)
         A = A[sorted, sorted];
         #### Do wted G or not ######
 
-        if wtedG == true
-           @rget D; M = Matrix(M); G = GRMwted(M, D); @rput G;
+     #   if wtedG == true
+     #      @rget D; M = Matrix(M); G = GRMwted(M, D); @rput G;
+     #   else 
+     #      M = Matrix(M); G =  GRM(M); #@rput G;
+     #   end
+  
+  
+        if networks == true
+           M = Matrix(M); G = DOM(M);
         else 
-           M = Matrix(M); G =  GRM(M); #@rput G;
+           M = Matrix(M); G =  GRM(M);
         end
 
         G = NamedArray(G, (idG, idG));
