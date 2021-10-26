@@ -42,9 +42,8 @@ Z =  hcat(collect(Zlist)...) ## cbind all elements in Zlist
   eta = Ur'y;
 
   function minimfunc(delta)
-
   (n - q) * log.(sum(eta.^2 ./(lambda .+ delta))) + sum(log.(lambda .+ delta))
-
+  end
 
   nvar = 1
   lower = ([0.00000000001])
@@ -58,9 +57,6 @@ Z =  hcat(collect(Zlist)...) ## cbind all elements in Zlist
   obj = reshape(obj)[1];
 
   return(obj)
-
-  end
-
   end
 
 
