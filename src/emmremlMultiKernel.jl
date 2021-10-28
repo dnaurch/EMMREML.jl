@@ -20,49 +20,51 @@ S = spI - ((X * inv(cholesky(Positive, X'*X))) * X')
 
 Z =  hcat(collect(Zlist)...) ## cbind all elements in Zlist
 
- function minimfunctionouter(weights)
-  
-  weights = weights/sum(weights)
-  ZKZt = zeros(n, n);
+function minimfunctionouter(weights)
+         
+         weights = weights/sum(weights)
+         ZKZt = zeros(n, n);
 
-  for i in 1:lz
-  ZKZt = ZKZt + weights[i] * collect(Zlist)[i] * collect(Klist)[i] * (collect(Zlist)[i])'
+         for i in 1:lz
+         ZKZt = ZKZt + weights[i] * collect(Zlist)[i] * collect(Klist)[i] * (collect(Zlist)[i])'
+         end
+
+         offset = 0.000001;
+
+         ZKZtandoffset = ZKZt + (offset * I);
+         SZKZtSandoffset = (S * ZKZtandoffset)*S;
+
+
+         #### I saw svd fail ... write a try-catch later but use positive eigen for now
+         D, U = eigen(Positive, Hermitian(Matrix(SZKZtSandoffset)));
+         Ur = U[:, :1:(n - q)];
+         lambda = D[1:(n - q)] .- offset;
+         eta = Ur'y;
+
+         function minimfunc(delta)
+         (n - q) * log.(sum(eta.^2 ./(lambda .+ delta))) + sum(log.(lambda .+ delta))
+         end
+
+         nvar = 1
+         lower = ([0.00000000001])
+         upper = ([Inf])
+
+         od = OnceDifferentiable(vars -> minimfunc(vars[1]), ones(nvar); autodiff=:forward);
+         inner_optimizer = LBFGS()
+         optimout = optimize(od, lower, upper, ones(nvar), Fminbox(inner_optimizer), Optim.Options(show_trace=true))
+
+         obj = Optim.minimum(optimout);  ### the objective
+         #obj = reshape(obj)[1];
+
+         return(obj)
   end
 
-  offset = log(n)
-
-  ZKZtandoffset = ZKZt + (offset * I);
-  SZKZtSandoffset = (S * ZKZtandoffset)*S;
-
-
-  #### I saw svd fail ... write a try-catch later but use positive eigen for now
-  D, U = eigen(Positive, Hermitian(SZKZtSandoffset));
-  Ur = U[:, :1:(n - q)];
-  lambda = D[1:(n - q)] .- offset;
-  eta = Ur'y;
-
-  function minimfunc(delta)
-  (n - q) * log.(sum(eta.^2 ./(lambda .+ delta))) + sum(log.(lambda .+ delta))
-  end
-
-  nvar = 1
-  lower = ([0.00000000001])
-  upper = ([Inf])
-
-  od = OnceDifferentiable(vars -> minimfunc(vars[1]), ones(nvar); autodiff=:forward);
-  inner_optimizer = LBFGS()
-  optimout = optimize(od, lower, upper, ones(nvar), Fminbox(inner_optimizer), Optim.Options(show_trace=true))
-
-  obj = Optim.minimum(optimout);  ### the objective
-  obj = reshape(obj)[1];
-
-  return(obj)
-  end
 
 
   nvar = lz
-  lower = ([0.00000000001])
-  upper = ([Inf])
+  lower = fill(0.00000000001, lz)
+  upper = fill(Inf, lz)
+  inner_optimizer = LBFGS()
 
   weights = optimize(minimfunctionouter, lower, upper, fill(1.0/lz, nvar), Fminbox(inner_optimizer), Optim.Options(show_trace=true))
   weights = Optim.minimizer(weights)
