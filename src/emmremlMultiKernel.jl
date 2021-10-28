@@ -5,12 +5,13 @@
 ## This is a fast and big Data version with autodifferentiation in Julia...
 ###############################################################################
 
+
 using Optim;
 using SparseArrays;
 using ForwardDiff, PositiveFactorizations;
 using LinearAlgebra, DataFrames;
 
-function emmremlMultiKernel(y, X, Zlist, Klist, linenames)
+function emmMK(y, X, Zlist, Klist, linenames)
 
 q = size(X,2);
 n = size(y,1);
@@ -82,7 +83,7 @@ function minimfunctionouter(weights)
  
  K = blockdiag([sparse(collect(Klistweighted)[i]) for i=1:lz]...)
  ZK = Z * K
- offset = log(n)
+ offset = 0.000001;
  ZKZtandoffset = ZKZt + (offset .* spI);
  SZKZtSandoffset = (S * ZKZtandoffset)*S;
 
@@ -166,13 +167,3 @@ return(m11)
 end
 
 
-
-### example make lists using sets Julia
-#using LinearAlgebra, SparseArrays
-#primes = Set{Array{Float64,2}}()
-#Z = spzeros(3,3);
-#Z2 = sparse(ones(3,3));
-#push!(primes, Z)
-#push!(primes, Z2)
-#collect(primes)[1]
-#length(primes)
