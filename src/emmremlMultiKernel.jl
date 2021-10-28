@@ -86,7 +86,7 @@ function minimfunctionouter(weights)
  ZKZtandoffset = ZKZt + (offset .* spI);
  SZKZtSandoffset = (S * ZKZtandoffset)*S;
 
- D, U = eigen(Positive, Hermitian(SZKZtSandoffset));
+ D, U = eigen(Positive, Hermitian(Matrix(SZKZtSandoffset)));
  Ur = U[:, :1:(n - q)];
  lambda = D[1:(n - q)] .- offset;
  eta = Ur'y;
