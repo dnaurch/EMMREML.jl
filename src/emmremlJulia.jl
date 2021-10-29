@@ -35,6 +35,8 @@ SZKZtSandoffset = Matrix((S * ZKZtandoffset)*S);
 
 #### I saw svd fail ... write a try-catch later but use positive eigen for now
 D, U = eigen(Positive, Hermitian(SZKZtSandoffset));
+U = reverse(U, dims=2); # reverse bcos PositiveFactorizations sorted eigen vectors and values from smallest to largest ie opposite of svd in R/Julia.
+D = reverse(D);
 Ur = U[:, :1:(n - q)];
 lambda = D[1:(n - q)] .- offset;
 eta = Ur'y;
