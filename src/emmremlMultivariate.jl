@@ -6,7 +6,7 @@
 ##################################################
 
 
-using LinearAlgebra;
+using LinearAlgebra, PositiveFactorizations;
 using RCall;
 using Statistics;
 #using ProgressMeter
@@ -55,7 +55,8 @@ function emmremlMultivariate(Y, X, Z, K, linenames)
         KZt = K * Z'
         ZKZt = Z * KZt
         ZKZt  = ZKZt + 0.000001*I;
-        eigZKZt = eigen(ZKZt)
+        #eigZKZt = eigen(ZKZt)
+	eigZKZt = eigen(Positive, ZKZt); # Generalize so no problems occur
 	### reverse eigen vectors and values so that highest is first like in R
 	eigZKZt.vectors .= reverse(eigZKZt.vectors, dims=2)
 	eigZKZt.values .= reverse(eigZKZt.values)
