@@ -56,6 +56,9 @@ function emmremlMultivariate(Y, X, Z, K, linenames)
         ZKZt = Z * KZt
         ZKZt  = ZKZt + 0.000001*I;
         eigZKZt = eigen(ZKZt)
+	### reverse eigen vectors and values so that highest is first like in R
+	eigZKZt.vectors .= reverse(eigZKZt.vectors, dims=2)
+	eigZKZt.values .= reverse(eigZKZt.values)
         n = size(ZKZt, 1)
         d = size(Y, 1)
         Yt = Y * eigZKZt.vectors
