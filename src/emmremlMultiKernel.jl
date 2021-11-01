@@ -137,7 +137,8 @@ namesuhat = Vector{String}();
 
 ### reshape uhat to 2 col matrix
 ic1 = length(linenames)
-GEBVs = reshape(uhat, (ic1,lz))                                             
+GEBVs = reshape(uhat, (ic1,lz))
+GEBVs = sum(GEBVs, dims=2)
                                              
 ### also use LU solve here....
 F = lu(sparse(X'Vinv * X));
@@ -149,7 +150,8 @@ PEVuhat = sigmausqhat * K - varuhat;
 varbetahat = lu(sparse(X'Vinv * X));
 varbetahat = inv(X'Vinv * X);
 
-uhat = DataFrame(Lines=namesuhat, Uhat=uhat);
+uhatLong = DataFrame(Lines=namesuhat, Uhat=uhat);
+uhat = DataFrame(Lines=linenames, Uhat=GEBVs);                                            
 Vu = sigmausqhat; Ve = sigmaesqhat;  
 varuhat = diag(varuhat); varbetahat = diag(varbetahat); PEVuhat = diag(PEVuhat);
 h2 = Vu ./(Vu + Ve); rel = 1 .- (PEVuhat ./(Vu * diag(K)));
@@ -165,8 +167,7 @@ m11 =
   :PEVuhat => PEVuhat,
   :loglik => loglik,
   :weights => weights,
-  :GEBVs => GEBVs,
-  :Lines => linenames,                                                    
+  :uhatLong => uhatLong,                                                  
   :h2 => h2,
   :rel => rel
 )
