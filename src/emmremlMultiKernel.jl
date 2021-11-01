@@ -138,7 +138,7 @@ namesuhat = Vector{String}();
 ### reshape uhat to 2 col matrix
 ic1 = length(linenames)
 GEBVs = Matrix(reshape(uhat, (ic1,lz)))
-GEBVs = sum(GEBVs, dims=2)
+GEBVs = vec(sum(GEBVs, dims=2))
                                              
 ### also use LU solve here....
 F = lu(sparse(X'Vinv * X));
