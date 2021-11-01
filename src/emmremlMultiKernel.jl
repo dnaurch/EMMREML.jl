@@ -137,7 +137,7 @@ namesuhat = Vector{String}();
 
 ### reshape uhat to 2 col matrix
 ic1 = length(linenames)
-GEBVs = reshape(uhat, (ic1,lz))
+GEBVs = Matrix(reshape(uhat, (ic1,lz)))
 GEBVs = sum(GEBVs, dims=2)
                                              
 ### also use LU solve here....
