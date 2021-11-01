@@ -135,7 +135,10 @@ namesuhat = Vector{String}();
   append!(namesuhat, extN)
   end
 
-
+### reshape uhat to 2 col matrix
+ic1 = length(linenames)
+GEBVs = reshape(uhat, (ic1,lz))                                             
+                                             
 ### also use LU solve here....
 F = lu(sparse(X'Vinv * X));
 jjj = F \ X'Vinv;
@@ -162,6 +165,8 @@ m11 =
   :PEVuhat => PEVuhat,
   :loglik => loglik,
   :weights => weights,
+  :GEBVs => GEBVs,
+  :Lines => linenames,                                                    
   :h2 => h2,
   :rel => rel
 )
