@@ -125,70 +125,60 @@ end
 
 #### compute Hmat differently ...
 
-function Hmat2(tau, omega, M; input="input.Rdata", wtedG=false) 
+function Hmat2(tau, omega, M; input="input.Rdata", epis=true) 
 
+## Amat & input are paths to their Rdata locations
 
         @rput input;
         R"load(input)";
         
-        @rget pednames;
-        R"genotyped <- as.character(unique(rownames(M)))";
-        R"ped$genotyped <- 1 * (pednames %in% genotyped)";
-        
-        ### order according to genotyped  - ungenotyped
-        R"pede <- data.frame(sire=ped[,2], dam=ped[,3], label=pednames, genotyped=ped[,4])";
-        R"ped.ord <- dplyr::filter(pede, label %in% linenames)";
-        R"ped.ord <- ped.ord[order(ped.ord$genotyped), ]";
-        R"pedOrd <- as.character(ped.ord$label)";
         
         @rget ped; @rget pednames; @rget pednum; @rget linenames; # Linenames ensure only Ped that has data is used for analysis...
         idA = pednames; @rput idA;
- 
-        A = computeA(Int64.(ped[:,1]), Int64.(ped[:,2]), Int64.(ped[:, 3]));
+        
+        A = computeA(Int64.(ped[:,1]), Int64.(ped[:,2]), Int64.(ped[:, 3]))
         A = NamedArray(A, (idA, idA));
   
         ##### Only use pedigree individuals that has data
         A = A[linenames, linenames];
-        @rget pedOrd;
-        A = A[pedOrd, pedOrd];
-
-
-        R"g1 <- as.character(ped.ord$label[ped.ord$genotyped == 1])";
-        R"g0 <- as.character(ped.ord$label[ped.ord$genotyped != 1])";
-        R"g0g1 <- as.character(c(g0, g1))";
-        @rget g1; @rget g0; @rget g0g1;
-
-        A11 = A[g0, g0];
-        A22 = A[g1, g1];
-        A12 = A[g0, g1];
-        A21 = A12';
-        A22inv = inv(cholesky(Positive, A22));
-        A22inv = NamedArray(A22inv, (g1, g1));
-
-        A = A[g0g1, g0g1]; # sort by ungenotyped first, then genotyped
+        idA = linenames; @rput idA; ## idA becomes linenames - a subset of only ped with phenos
 
         #@rget M;
         R"if(exists('MB')){M = MB}";
-        R"idG <- rownames(M)"; @rget idG;
+        R"idG <- as.character(rownames(M))"; @rget idG;
+        R"idP <- unique(as.character(setdiff(linenames, idG)))"; @rget idP;
+        
+  
+        A11 = A[idP, idP];
+        A12 = A[idP, idG];
+        A21 = A12';
+        A22 = A[idG, idG];
+  
+        sorted = vcat(idP, idG);
+        A = A[sorted, sorted];
         #### Do wted G or not ######
-
-        if wtedG == true
-           @rget D; M = Matrix(M); G = GRMwted(M, D); @rput G;
+  
+  
+        if epis == true
+           M = Matrix(M); G = M * M';
         else 
            M = Matrix(M); G =  GRM(M);
         end
 
         G = NamedArray(G, (idG, idG));
-        
 
-        H11 = A11 + (A12 * A22inv * (G - A22) * A22inv * A21);
-        H12 = A12 * A22inv * G;
-        H21 = H12';
-        H22 = G;
+        G22 = G;
 
-        H = vcat(hcat(H11, H12), hcat(H21, H22));
+        A22inv = inv(cholesky(Positive, A22)); A22inv = NamedArray(A22inv, (idG, idG));
+        G22inv = inv(cholesky(Positive, G22)); G22inv = NamedArray(G22inv, (idG, idG));
+        H22 = inv(cholesky(Positive, (tau * G22inv) + ((1 - omega) * A22inv))); H22 = NamedArray(H22, (idG, idG));
+        H11 = A12 * A22inv * (H22 - A22) * A22inv * A21;
+        H12 = A12 * A22inv * (H22 - A22);
+        H21 = (H22 - A22) * A22inv * A21;
+        H22 = (H22 - A22);
         nom1 = vcat(names(A11,1), names(A21, 1)); nom2 = vcat(names(A11,2), names(A12, 2));
-        H = 0.9*H + 0.1*I;
+        H = A + hcat(vcat(H11, H21), vcat(H12, H22));
+        H = 0.90*H + 0.1*I;
         H = NamedArray(H, (nom1, nom2));
         H = H[linenames, linenames];
 
