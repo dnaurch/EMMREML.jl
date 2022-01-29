@@ -186,6 +186,71 @@ function Hmat2(tau, omega, M; input="input.Rdata", epis=true)
 
 end
 
+#### Another alternative for Hmat computation
+
+
+function Hmat_alt(tau, omega, M; input="input.Rdata", networks=false) 
+
+## Amat & input are paths to their Rdata locations
+
+        @rput input;
+        R"load(input)";
+        
+        
+        @rget ped; @rget pednames; @rget pednum; @rget linenames; # Linenames ensure only Ped that has data is used for analysis...
+        idA = pednames; @rput idA;
+        
+        A = computeA(Int64.(ped[:,1]), Int64.(ped[:,2]), Int64.(ped[:, 3]))
+        A = NamedArray(A, (idA, idA));
+  
+        ##### Only use pedigree individuals that has data
+        A = A[linenames, linenames];
+        idA = linenames; @rput idA; ## idA becomes linenames - a subset of only ped with phenos
+
+        #@rget M;
+        R"if(exists('MB')){M = MB}";
+        R"idG <- as.character(rownames(M))"; @rget idG;
+        R"idP <- unique(as.character(setdiff(linenames, idG)))"; @rget idP;
+        
+  
+        A11 = A[idP, idP];
+        A12 = A[idP, idG];
+        A21 = A12';
+        A22 = A[idG, idG];
+  
+        sorted = vcat(idP, idG);
+        A = A[sorted, sorted];
+        #### Do wted G or not ######
+  
+  
+        if networks == true
+           M = Matrix(M); G = DOM(M);
+        else 
+           M = Matrix(M); G =  GRM(M);
+        end
+
+        G = NamedArray(G, (idG, idG));
+
+        A22inv = inv(cholesky(Positive, A22)); A22inv = NamedArray(A22inv, (idG, idG));
+        
+        # create H components (4 quadrants)
+        H11 = A11 + (A12 * A22inv * (G - A22) * A22inv * A21);
+        H12 = A12 * A22inv * G;
+        H21 = H12';
+        H22 =  G;
+  
+        # put H together by peices
+        H = hcat(vcat(H11, H21), vcat(H12, H22));
+        nom1 = vcat(names(A11,1), names(A21, 1)); nom2 = vcat(names(A11,2), names(A12, 2));
+        H = 0.95*H + 0.05*I;
+        H = NamedArray(H, (nom1, nom2));
+        H = H[linenames, linenames];
+
+        return(Dict(:H => H,:names => linenames))
+
+end
+
+
 
 function pedMat(input) 
 
