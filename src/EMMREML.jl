@@ -17,7 +17,7 @@ export emmreml, emmremlMultivariate
 export GRM, GRMinv, RKHS, RKHSinv, SqEuclid
 export GRMwted, GRMwtedinv, GRMiter, GRMVariter, DOM
 #export emmreml_LU
-export Hmat, computeA, Hmat2, pedMat, HmatNet, HmatEpis
+export Hmat, computeA, Hmat2, pedMat, HmatNet, HmatEpis, Hmat_alt
 export emmMK
 
 end # module
