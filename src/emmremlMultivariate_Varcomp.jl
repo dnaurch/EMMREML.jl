@@ -9,7 +9,7 @@
 
 using LinearAlgebra;
 using Distributions;
-using Statistics;
+using Statistics, PositiveFactorizations;
 
 #BLAS.set_num_threads(20)
 #my_BLAS_set_num_threads(n) =  ccall((:openblas_set_num_threads64_, Base.libblas_name), Cvoid, (Int32,), n)
@@ -33,14 +33,16 @@ function emmremlMultivariate(Y, X, Z, K)
     function wrapperECM1(l)
         ytl = Yt[:, l]
         xtl = Xt[:, l]
-        deltal = eigZKZt.values[l]
+        #deltal = eigZKZt.values[l]
+	deltal = D[l]	
         return(ECM1(ytl, xtl, Vgt, Vet, Bt, deltal))
     end
 
 
     function Vgfunc(l, outfromECM1)
         Vgl = outfromECM1[l][:gtl] * outfromECM1[l][:gtl]'
-        return((1/n) * (1 ./ eigZKZt.values[l]) * (Vgl + outfromECM1[l][:Sigmalt]))
+        #return((1/n) * (1 ./ eigZKZt.values[l]) * (Vgl + outfromECM1[l][:Sigmalt]))
+	return((1/n) * (1 ./ D[l]) * (Vgl + outfromECM1[l][:Sigmalt]))	
     end
 
 
@@ -54,11 +56,18 @@ function emmremlMultivariate(Y, X, Z, K)
         KZt = K * Z'
         ZKZt = Z * KZt
         ZKZt  = ZKZt + 0.0001*I;
-        eigZKZt = eigen(ZKZt)
+        #eigZKZt = eigen(ZKZt)
+	eigZKZt = eigen(Positive, Hermitian(ZKZt));
+	U = reverse(eigZKZt.vectors, dims=2); 
+	D = reverse(eigZKZt.values);
+		
         n = size(ZKZt, 1)
         d = size(Y, 1)
-        Yt = Y * eigZKZt.vectors
-        Xt = X * eigZKZt.vectors
+        #Yt = Y * eigZKZt.vectors
+        #Xt = X * eigZKZt.vectors
+	Yt = Y * U
+        Xt = X * U
+	
         Vgt = cov(Y')/2
         Vet = cov(Y')/2
         XttinvXtXtt = Xt' * pinv(Xt*Xt')
