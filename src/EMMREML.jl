@@ -2,7 +2,7 @@ module EMMREML
 
 using Optim, RCall;
 using Statistics, Distributions, NamedArrays;
-using ForwardDiff, PositiveFactorizations;
+using ForwardDiff, PositiveFactorizations, AltDistributions;
 using LinearAlgebra, DataFrames, InvertedIndices, PedigreeBase;
 
 include("emmremlJulia.jl")
